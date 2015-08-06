@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: Programming with Python</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">Programming with Python</h1></a>
+          <h2 class="subtitle">Merging DataSets in pandas</h2>
+          <p>In many “real world” situations, the data that we want to use come in multiple files. We often need to combine these files into a single DataFrame to analyze the data. The pandas package provides <a href="http://pandas.pydata.org/pandas-docs/stable/merging.html">various methods for combining DataFrames</a> including <code>merge</code> and <code>concat</code>.</p>
+<section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h2 id="learning-objectives"><span class="glyphicon glyphicon-certificate"></span>Learning Objectives</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li>Learn how to concatenate two DataFrames together (append one dataFrame to a second dataFrame)</li>
+<li>Learn how to join two DataFrames together using a uniqueID found in both DataFrames</li>
+<li>Learn how to write out a DataFrame to csv using Pandas</li>
+</ul>
+</div>
+</section>
+<p>To work through the examples below, we first need to load the species and surveys files into pandas DataFrames. In iPython:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="im">import</span> pandas <span class="im">as</span> pd
+surveys_df <span class="op">=</span> pd.read_csv(<span class="st">&#39;data/surveys.csv&#39;</span>, keep_default_na<span class="op">=</span><span class="va">False</span>, na_values<span class="op">=</span>[<span class="st">&quot;&quot;</span>])
+surveys_df</code></pre></div>
+<pre class="output"><code>       record_id  month  day  year  plot species  sex  wgt
+0              1      7   16  1977     2      NA    M  NaN
+1              2      7   16  1977     3      NA    M  NaN
+2              3      7   16  1977     2      DM    F  NaN
+3              4      7   16  1977     7      DM    M  NaN
+4              5      7   16  1977     3      DM    M  NaN
+...          ...    ...  ...   ...   ...     ...  ...  ...
+35544      35545     12   31  2002    15      AH  NaN  NaN
+35545      35546     12   31  2002    15      AH  NaN  NaN
+35546      35547     12   31  2002    10      RM    F   14
+35547      35548     12   31  2002     7      DO    M   51
+35548      35549     12   31  2002     5     NaN  NaN  NaN
+
+[35549 rows x 8 columns]</code></pre>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">species_df <span class="op">=</span> pd.read_csv(<span class="st">&#39;data/species.csv&#39;</span>, keep_default_na<span class="op">=</span><span class="va">False</span>, na_values<span class="op">=</span>[<span class="st">&quot;&quot;</span>])
+species_df</code></pre></div>
+<pre class="output"><code>   species_id             genus          species                   taxa
+0          AB        Amphispiza        bilineata                   Bird
+1          AH  Ammospermophilus          harrisi    Rodent-not censused
+2          AS        Ammodramus       savannarum                   Bird
+3          BA           Baiomys          taylori                 Rodent
+4          CB   Campylorhynchus  brunneicapillus                   Bird
+..        ...               ...              ...                    ...
+50         UR            Rodent              sp.                 Rodent
+51         US           Sparrow              sp.                   Bird
+52         XX               NaN              NaN  Zero Trapping Success
+53         ZL       Zonotrichia       leucophrys                   Bird
+54         ZM           Zenaida         macroura                   Bird
+
+[55 rows x 4 columns]</code></pre>
+<p>Take note that the <code>read_csv</code> method we used can take some additional options which we didn’t use previously. Many functions in python have a set of options that can be set by the user if needed. In this case, we have told Pandas to assign empty values in our CSV to NaN <code>keep_default_na=False, na_values=[&quot;&quot;]</code>. <a href="More%20about%20all%20of%20the%20read_csv%20options%20here.">http://pandas.pydata.org/pandas-docs/dev/generated/pandas.io.parsers.read_csv.html</a></p>
+<h2 id="concatenating-dataframes">Concatenating DataFrames</h2>
+<p>We can use the <code>concat</code> function in Pandas to append either columns or rows from one DataFrame to another. Let’s grab two subsets of our data to see how this works.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="co"># read in first 10 lines of surveys table</span>
+surveySub <span class="op">=</span> surveys_df.head(<span class="dv">10</span>)
+<span class="co"># grab the last 10 rows (minus the last one)</span>
+surveySubLast10 <span class="op">=</span> surveys_df[<span class="op">-</span><span class="dv">11</span>:<span class="op">-</span><span class="dv">1</span>]
+<span class="co">#reset the index values to the second dataframe appends properly</span>
+surveySubLast10<span class="op">=</span>surveySubLast10.reset_index()</code></pre></div>
+<p>When we concatenate DataFrames, we need to specify the axis. <code>axis=0</code> tells Pandas to stack the second DataFrame under the first one. It will automatically detect whether the column names are the same and will stack accordingly. <code>axis=0</code> will stack the columns in the second DataFrame to the RIGHT of the first DataFrame. To stack the data vertically, we need to make sure we have the same columns and associated column format in both datasets. When we stack horizonally, we want to make sure what we are doing makes sense (ie the data are related in some way).</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="co"># stack the DataFrames on top of each other</span>
+verticalStack <span class="op">=</span> pd.concat([surveySub, surveySubLast10], axis<span class="op">=</span><span class="dv">0</span>)
+
+<span class="co"># place the DataFrames side by side</span>
+horizontalStack <span class="op">=</span> pd.concat([surveySub, surveySubLast10], axis<span class="op">=</span><span class="dv">1</span>)</code></pre></div>
+<h3 id="row-index-values-and-concat">Row Index Values and Concat</h3>
+<p>Have a look at the <code>horizontalStack</code> DataFrame you just created. Notice anything unusual? The row indexes for the two data frames <code>surveySub</code> and <code>surveySubLast10</code> are not the same. Thus, when Python tries to concatenate the two dataframes it can’t place them next to each other. We can reindex our second dataframe using the <code>reset_index()</code> method.</p>
+<p>```python #reindex the data and then run concat again</p>
+<p>surveySubLast10 = surveysSubLast10.reset_index() horizontalStack = pd.concat([surveySub, surveySubLast10], axis=1) ```</p>
+<p>The new <code>horizontalStack</code> DataFrame is now side by side without the extra <code>NaN</code> values.</p>
+<h2 id="writing-out-your-data">Writing out your data</h2>
+<p>When you are finished merging your DataFrames, you might want to export the data for future use. We can use the <code>to_csv</code> command to do this. Note that the code below will by default save the data into the current working directory. We could save it to a different folder by adding the foldername and a slash to the file <code>verticalStack.to_csv('foldername/out.csv')</code>.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="co"># Write DataFrame to CSV </span>
+verticalStack.to_csv(<span class="st">&#39;out.csv&#39;</span>)</code></pre></div>
+<p>Check out your working directory to make sure the CSV wrote out properly, and that you can open it! If you want, try to bring it back into python to make sure it imports properly.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="co"># for kicks read our output back into python and make sure all looks good</span>
+newOutput <span class="op">=</span> pd.read_csv(<span class="st">&#39;out.csv&#39;</span>, keep_default_na<span class="op">=</span><span class="va">False</span>, na_values<span class="op">=</span>[<span class="st">&quot;&quot;</span>])</code></pre></div>
+<section class="challenge panel panel-success">
+<div class="panel-heading">
+<h2 id="try-it-yourself"><span class="glyphicon glyphicon-pencil"></span>Try it yourself</h2>
+</div>
+<div class="panel-body">
+<p>In the data folder, there are two survey data files: <code>survey2001.csv</code> and <code>survey2002.csv</code>. Read the data into python and combine the files to make one new data frame. Create a plot of average plot weight by year grouped by sex. Export your results as a CSV and make sure it reads back into python properly.</p>
+</div>
+</section>
+<h2 id="joining-dataframes">Joining DataFrames</h2>
+<p>When we concatenated our DataFrames we simply glued them to each other - stacking them either vertically or side by side. Another way to combine DataFrames is to combine them using columns in each dataset that contain common values (a common unique id) as a guide. Combining DataFrames using a common field is called “joining”. The columns containing the common values are called “join key(s)”. Joining DataFrames in this way is often useful when one DataFrame is a “lookup table” containing additional data that we want to include in the other.</p>
+<p>NOTE: This process of joining tables is similar to what we do with tables in an SQL database.</p>
+<p>For example, the <code>species.csv</code> file that we’ve been working with is a lookup table. This table contains the genus, species and taxa code for 55 species. The species code is unique for each line. These species are identified in our survey data as well using the unique species code. Rather than adding 3 more columns for the genus, species and taxa to each of the 35,549 line Survey data table, we can maintain the shorter table with the species information. When we want to access that information, we can create a query that joins the additional columns of information to the survey data.</p>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h2 id="why-store-data-in-databases"><span class="glyphicon glyphicon-pushpin"></span>Why store data in databases?</h2>
+</div>
+<div class="panel-body">
+<p>Storing data in this way has many benefits including:</p>
+<ol style="list-style-type: decimal">
+<li>it ensures consistency in the spelling of species attributes (genus, species and taxa) given each species is only entered once. Imagine the possibilities for spelling errors when entering the genus and species thousands of times!</li>
+<li>It also makes it easy for us to make changes to the species information once without having to find each instance of it in the larger survey data.</li>
+<li>It optimizes the size of our data.</li>
+<li>And more!</li>
+</ol>
+</div>
+</aside>
+<h2 id="joining-two-dataframes">Joining two DataFrames</h2>
+<p>To better understand joins, let’s grab the first 10 lines of our data as a subset to work with. We’ll use the <code>.head</code> method to do this. We’ll also read in a subset of the species table.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="co"># read in first 10 lines of surveys table</span>
+surveySub <span class="op">=</span> surveys_df.head(<span class="dv">10</span>)
+
+<span class="co"># import a small subset of the species data designed for this part of the lesson</span>
+speciesSub <span class="op">=</span> pd.read_csv(<span class="st">&#39;speciesSubset.csv&#39;</span>, keep_default_na<span class="op">=</span><span class="va">False</span>, na_values<span class="op">=</span>[<span class="st">&quot;&quot;</span>])</code></pre></div>
+<p>In this example, <code>speciesSub</code> is the lookup table containing genus, species, and taxa names that we want to join with the data in <code>surveySub</code> to produce a new DataFrame that contains all of the columns from both <code>species_df</code> <em>and</em> <code>survey_df</code>.</p>
+<h2 id="identifying-join-keys">Identifying join keys</h2>
+<p>To identify appropriate join keys we first need to know which field(s) are shared between the files (DataFrames). We might inspect both DataFrames to identify these columns. If we are lucky, both DataFrames will have columns with the same name that also contain the same data. If we are less lucky, we need to identify a (differently-named) column in each DataFrame that contains the same information.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">speciesSub.columns</code></pre></div>
+<pre class="output"><code>Index([u&#39;species_id&#39;, u&#39;genus&#39;, u&#39;species&#39;, u&#39;taxa&#39;], dtype=&#39;object&#39;)</code></pre>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">surveySub.columns</code></pre></div>
+<pre class="output"><code>Index([u&#39;record_id&#39;, u&#39;month&#39;, u&#39;day&#39;, u&#39;year&#39;, u&#39;plot&#39;, u&#39;species&#39;, u&#39;sex&#39;, u&#39;wgt&#39;], dtype=&#39;object&#39;)</code></pre>
+<p>In our example, the join key is the column containing the two-letter species identifier, which is called <code>species</code> in <code>surveys_df</code> and <code>species_id</code> in <code>species_df</code>.</p>
+<p>Now that we know the fields with the common species ID attributes in each DataFrame, we are almost ready to join our data. However, since there are <a href="http://blog.codinghorror.com/a-visual-explanation-of-sql-joins/">different types of joins</a>, we also need to decide which type of join makes sense for our analysis.</p>
+<h2 id="inner-joins">Inner joins</h2>
+<p>The most common type of join is called an <em>inner join</em>. An inner join combines two DataFrames based on a join key and returns a new DataFrame that contains <strong>only</strong> those rows that have matching values in <em>both</em> of the original DataFrames.</p>
+<p>Inner joins yield a DataFrame that contains only rows where the value being joins exists in BOTH tables. An example of an inner join, adapted from <a href="http://blog.codinghorror.com/a-visual-explanation-of-sql-joins/">this page</a> is below:</p>
+<div class="figure">
+<img src="http://blog.codinghorror.com/content/images/uploads/2007/10/6a0120a85dcdae970b012877702708970c-pi.png" alt="Inner join – courtesy of codinghorror.com" />
+<p class="caption">Inner join – courtesy of codinghorror.com</p>
+</div>
+<p>The pandas function for performing joins is called <code>merge</code> and an Inner join is the default option:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">merged_inner <span class="op">=</span> pd.merge(left<span class="op">=</span>surveySub,right<span class="op">=</span>speciesSub, left_on<span class="op">=</span><span class="st">&#39;species&#39;</span>, right_on<span class="op">=</span><span class="st">&#39;species_id&#39;</span>)
+
+merged_inner</code></pre></div>
+<pre class="output"><code>    record_id   month   day     year    plot    species_x   sex     wgt     species_id  genus   species_y   taxa
+2   3   7   16  1977    2   DM  F   NaN     DM  Dipodomys   merriami    Rodent
+3   4   7   16  1977    7   DM  M   NaN     DM  Dipodomys   merriami    Rodent
+4   5   7   16  1977    3   DM  M   NaN     DM  Dipodomys   merriami    Rodent
+5   8   7   16  1977    1   DM  M   NaN     DM  Dipodomys   merriami    Rodent
+6   9   7   16  1977    1   DM  F   NaN     DM  Dipodomys   merriami    Rodent
+7   7   7   16  1977    2   PE  F   NaN     PE  Peromyscus  eremicus    Rodent</code></pre>
+<p>The result of an inner join of <code>surveySub</code> and <code>speciesSub</code> is a new DataFrame that contains the combined set of columns from <code>surveySub</code> and <code>speciesSub</code>. It <em>only</em> contains rows that have two-letter species codes that are the same in both the surveysSub and speciesSub DataFrames. In other words, if a row in <code>surveySub</code> has a value of <code>species</code> that does <em>not</em> appear in the <code>species_id</code> column of <code>species</code>, it will not be included in the DataFrame returned by an inner join. Similarly, if a row in <code>speciesSub</code> has a value of <code>species_id</code> that does <em>not</em> appear in the <code>species</code> column of <code>surveySub</code>, that row will not be included in the DataFrame returned by an inner join.</p>
+<p>The two DataFrames that we want to join are passed to the <code>merge</code> function using the <code>left</code> and <code>right</code> argument. The <code>left_on='species'</code> argument tells <code>merge</code> to use the <code>species</code> column as the join key from <code>surveySub</code> (the <code>left</code> DataFrame). Similarly , the <code>right_on='species_id'</code> argument tells <code>merge</code> to use the <code>species_id</code> column as the join key from <code>speciesSub</code> (the <code>right</code> DataFrame). For inner joins, the order of the <code>left</code> and <code>right</code> arguments does not matter.</p>
+<p>The result <code>merged_inner</code> DataFrame contains all of the columns from <code>surveySub</code> (record id, month, day, etc.) as well as all the columns from <code>speciesSub</code> (species id, genus, species, and taxa). Because both original DataFrames contain a column named <code>species</code>, pandas automatically appends a <code>_x</code> to the column name from the <code>left</code> DataFrame and a <code>_y</code> to the column name from the <code>right</code> DataFrame.</p>
+<p>Notice that <code>merged_inner</code> has fewer rows than <code>surveysSub</code>. This is an indication that there were rows in <code>surveys_df</code> with value(s) for <code>species</code> that do not exist as value(s) for <code>species_id</code> in <code>species_df</code>.</p>
+<h2 id="left-joins">Left joins</h2>
+<p>What if we want to add information from <code>speciesSub</code> to <code>surveysSub</code> without losing any of the information from <code>surveySub</code>? In this case, we use a different type of join called a “left outer join”, or a “left join”.</p>
+<p>Like an inner join, a left join uses join keys to combine two DataFrames. Unlike an inner join, a left join will return <em>all</em> of the rows from the <code>left</code> DataFrame, even those rows whose join key(s) do not have values in the <code>right</code> DataFrame. Rows in the <code>left</code> DataFrame that are missing values for the join key(s) in the <code>right</code> DataFrame will simply have null (i.e., NaN or None) values for those columns in the resulting joined DataFrame.</p>
+<p>Note: a left join will still discard rows from the <code>right</code> DataFrame that do not have values for the join key(s) in the <code>left</code> DataFrame.</p>
+<div class="figure">
+<img src="http://blog.codinghorror.com/content/images/uploads/2007/10/6a0120a85dcdae970b01287770273e970c-pi.png" alt="Left Join" />
+<p class="caption">Left Join</p>
+</div>
+<p>A left join is performed in pandas by calling the same <code>merge</code> function used for inner join, but using the <code>how='left'</code> argument:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">merged_left <span class="op">=</span> pd.merge(left<span class="op">=</span>surveySub,right<span class="op">=</span>speciesSub, how<span class="op">=</span><span class="st">&#39;left&#39;</span>, left_on<span class="op">=</span><span class="st">&#39;species&#39;</span>, right_on<span class="op">=</span><span class="st">&#39;species_id&#39;</span>)
+
+merged_left</code></pre></div>
+<pre class="output"><code>    record_id   month   day     year    plot    species_x   sex     wgt     species_id  genus   species_y   taxa
+0   1   7   16  1977    2   NL  M   NaN     NL  Neotoma     albigula    Rodent
+1   2   7   16  1977    3   NL  M   NaN     NL  Neotoma     albigula    Rodent
+2   3   7   16  1977    2   DM  F   NaN     DM  Dipodomys   merriami    Rodent
+3   4   7   16  1977    7   DM  M   NaN     DM  Dipodomys   merriami    Rodent
+4   5   7   16  1977    3   DM  M   NaN     DM  Dipodomys   merriami    Rodent
+5   8   7   16  1977    1   DM  M   NaN     DM  Dipodomys   merriami    Rodent
+6   9   7   16  1977    1   DM  F   NaN     DM  Dipodomys   merriami    Rodent
+7   6   7   16  1977    1   PF  M   NaN     NaN     NaN     NaN     NaN
+8   10  7   16  1977    6   PF  F   NaN     NaN     NaN     NaN     NaN
+9   7   7   16  1977    2   PE  F   NaN     PE  Peromyscus  eremicus    Rodent</code></pre>
+<p>The result DataFrame from a left join (<code>merged_left</code>) looks very much like the result DataFrame from an inner join (<code>merged_inner</code>) in terms of the columns it contains. However, unlike <code>merged_inner</code>, <code>merged_left</code> contains the <strong>same number of rows</strong> as the original <code>surveysSub</code> DataFrame. When we inspect <code>merged_left</code>, we find there are rows where the information that should have come from <code>speciesSub</code> (i.e., <code>species_id</code>, <code>genus</code>, <code>species_y</code>, and <code>taxa</code>) is missing (they contain NaN values):</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">merged_left[ pd.isnull(merged_left.species_id) ]</code></pre></div>
+<pre class="output"><code>    record_id   month   day     year    plot    species_x   sex     wgt     species_id  genus   species_y   taxa
+7   6   7   16  1977    1   PF  M   NaN     NaN     NaN     NaN     NaN
+8   10  7   16  1977    6   PF  F   NaN     NaN     NaN     NaN     NaN</code></pre>
+<p>These rows are the ones where the value of <code>species</code> from <code>surveySub</code> (in this case, <code>NaN</code>) does not occur in <code>speciesSub</code>.</p>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h2 id="other-join-types"><span class="glyphicon glyphicon-pushpin"></span>Other join types</h2>
+</div>
+<div class="panel-body">
+<p>The pandas <code>merge</code> function supports two other join types:</p>
+<ul>
+<li>Right (outer) join: Invoked by passing <code>how='right'</code> as an argument. Similar to a left join, except <em>all</em> rows from the <code>right</code> DataFrame are kept, while rows from the <code>left</code> DataFrame without matching join key(s) values are discarded.</li>
+<li>Full (outer) join: Invoked by passing <code>how='outer'</code> as an argument. This join type returns the all pairwise combinations of rows from both DataFrames; i.e., the result DataFrame will contain rows <code>(left_1, right_1)</code>, <code>(left_1,   right_2)</code>, <code>(left_2, right_1)</code>, <code>(left_2, right_2)</code>, etc. This join type is very rarely used.</li>
+</ul>
+</div>
+</aside>
+<section class="challenge panel panel-success">
+<div class="panel-heading">
+<h2 id="test-your-understanding"><span class="glyphicon glyphicon-pencil"></span>Test your understanding</h2>
+</div>
+<div class="panel-body">
+<ol style="list-style-type: decimal">
+<li>Create a new DataFrame by joining the contents of the <code>surveys.csv</code> and <code>species.csv</code> tables. Then calculate and plot the distribution of:</li>
+</ol>
+<ul>
+<li>taxa by plot</li>
+<li>taxa by sex by plot</li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
+<li>In the data folder, there is a plot <code>CSV</code> that contains information about the type associated with each plot. Use that data to summarize the number of plots by plot type.</li>
+<li>Calculate a diversity index of your choice for control vs rodent exclosure plots. The index should consider both species abundance and number of species. You might choose to use the simple <a href="http://www.amnh.org/explore/curriculum-collections/biodiversity-counts/plant-ecology/how-to-calculate-a-biodiversity-index">biodiversity index described here</a> which calculates diversity <code>number of species in the plot / total number of individuals in the plot = Biodiversity index</code></li>
+</ol>
+</div>
+</section>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="http://software-carpentry.org/v5/js/jquery-1.9.1.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+  </body>
+</html>

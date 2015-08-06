@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: Programming with Python</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">Programming with Python</h1></a>
+          <h2 class="subtitle">Starting with data</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h2 id="learning-objectives"><span class="glyphicon glyphicon-certificate"></span>Learning Objectives</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li>Explain what a library is, and what libraries are used for.</li>
+<li>Load a Python library and use the things it contains.</li>
+<li>Read tabular data from a file into a program.</li>
+<li>Assign values to variables.</li>
+<li>Select individual values and subsections from data.</li>
+<li>Perform operations on numeric data.</li>
+<li>Display simple graphs.</li>
+</ul>
+</div>
+</section>
+<p>A library in Python contains a set of tools (called functions) that perform tasks on our data. Importing a library is like getting a piece of lab equipment out of a storage locker and setting it up on the bench for use in a project. Once a library is set up, it can be used or called to perform many tasks.</p>
+<p>(<a href="http://www.popularmechanics.co.za/wp-content/uploads/resized/92470_resized_image3.jpg">Mythbusters workshop</a>)</p>
+<p>One of the best options for working with tabular data in python is to use the <a href="http://pandas.pydata.org/">Python Data Analysis Library</a> (a.k.a. pandas). The Pandas library provides data structures, produces high quality plots with <a href="http://matplotlib.org/">matplotlib</a> and integrates nicely with other libraries that use <a href="http://www.numpy.org/">NumPy</a> (which is another Python library) arrays.</p>
+<p>Python doesn’t load all of the libraries available to it by default. We have to add an <code>import</code> statement to our code in order to use library functions. To import a library, we use the syntax <code>import libraryName</code>. If we want to give the library a nickname to shorten the command, we can add <code>as nickNameHere</code>. An example of importing the pandas library using the common nickname <code>pd</code> is below.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="im">import</span> pandas <span class="im">as</span> pd</code></pre></div>
+<p>Each time we call a function that’s in a library, we use the syntax <code>LibraryName.FunctionName</code>. Adding the library name with a <code>.</code> before the function name tells python where to find the function. In the example above, we have imported pandas as <code>pd</code>. This means we don’t have to type out <code>pandas</code> each time we call a pandas function.</p>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h2 id="lesson-overview"><span class="glyphicon glyphicon-pushpin"></span>Lesson Overview</h2>
+</div>
+<div class="panel-body">
+<p>We are studying the species and weight of animals caught in plots in a study area. The data sets are stored in .csv (comma separated value) format. Within the <code>.csv</code> files, each row holds information for a single animal, and the columns represent: record_id, month, day, year, plot, species, sex, wgt.</p>
+<p>The first few rows of our first file look like this:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="co">&quot;record_id&quot;</span>,<span class="st">&quot;month&quot;</span>,<span class="st">&quot;day&quot;</span>,<span class="st">&quot;year&quot;</span>, <span class="st">&quot;plot&quot;</span>,<span class="st">&quot;species&quot;</span>,<span class="st">&quot;sex&quot;</span>,<span class="st">&quot;wgt&quot;</span>
+<span class="co">&quot;63&quot;</span>,<span class="st">&quot;8&quot;</span>,<span class="st">&quot;19&quot;</span>,<span class="st">&quot;1977&quot;</span>,<span class="st">&quot;3&quot;</span>,<span class="st">&quot;DM&quot;</span>,<span class="st">&quot;M&quot;</span>,<span class="st">&quot;40&quot;</span>
+<span class="co">&quot;64&quot;</span>,<span class="st">&quot;8&quot;</span>,<span class="st">&quot;19&quot;</span>,<span class="st">&quot;1977&quot;</span>,<span class="st">&quot;7&quot;</span>,<span class="st">&quot;DM&quot;</span>,<span class="st">&quot;M&quot;</span>,<span class="st">&quot;48&quot;</span>
+<span class="co">&quot;65&quot;</span>,<span class="st">&quot;8&quot;</span>,<span class="st">&quot;19&quot;</span>,<span class="st">&quot;1977&quot;</span>,<span class="st">&quot;4&quot;</span>,<span class="st">&quot;DM&quot;</span>,<span class="st">&quot;F&quot;</span>,<span class="st">&quot;29&quot;</span>
+<span class="co">&quot;66&quot;</span>,<span class="st">&quot;8&quot;</span>,<span class="st">&quot;19&quot;</span>,<span class="st">&quot;1977&quot;</span>,<span class="st">&quot;4&quot;</span>,<span class="st">&quot;DM&quot;</span>,<span class="st">&quot;F&quot;</span>,<span class="st">&quot;46&quot;</span>
+<span class="co">&quot;67&quot;</span>,<span class="st">&quot;8&quot;</span>,<span class="st">&quot;19&quot;</span>,<span class="st">&quot;1977&quot;</span>,<span class="st">&quot;7&quot;</span>,<span class="st">&quot;DM&quot;</span>,<span class="st">&quot;M&quot;</span>,<span class="st">&quot;36&quot;</span></code></pre></div>
+<h3 id="we-want-to">We want to:</h3>
+<ol style="list-style-type: decimal">
+<li>Load the data into memory in Python.</li>
+<li>Calculate the average weight of all individuals sampled, by species.</li>
+<li>Plot the average weights by species and perhaps by plot too.</li>
+</ol>
+<p>We can automate this process using Python. It’s efficient to spend time building the code to perform these tasks because once it’s built, we can use it over and over on different datasets that use a similar format. This makes our methods easily reproducible. We can also easily share our code with colleagues and they can replicate the same analysis.</p>
+</div>
+</aside>
+<h2 id="reading-data-using-pandas">Reading Data using pandas</h2>
+<p>We will begin by locating and reading our survey data which are in CSV format. We can use Pandas <code>read_csv</code> function to pull the file directly into a <a href="http://pandas.pydata.org/pandas-docs/stable/dsintro.html#dataframe">DataFrame</a>.</p>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h2 id="so-whats-a-dataframe"><span class="glyphicon glyphicon-pushpin"></span>So what’s a DataFrame?</h2>
+</div>
+<div class="panel-body">
+<p>A DataFrame is a 2-dimensional data structure that can store data of different types (including characters, integers, floating point values, factors and more) in columns. It is similar to spreadsheets or SQL tables or the <code>data.frame</code> in R.</p>
+</div>
+</aside>
+<p>First, let’s make sure the python Pandas library is loaded. We will import Pandas using the nickname <code>pd</code>.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="im">import</span> pandas <span class="im">as</span> pd</code></pre></div>
+<p>Let’s also import the <a href="https://docs.python.org/2/library/os.html">OS Library</a>. This library allows us to make sure we are in the correct working directory. If you are working in IPython Notebook, be sure to start the notebook in the workshop repository. If you didn’t do that you can always set the working directory using the code below.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="im">import</span> os
+os.getcwd()
+<span class="co"># if this directory isn&#39;t right, use the command below to set the working directory</span>
+os.chdir(<span class="st">&quot;YOURPathHere&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="co"># note the pd.read_csv is used because we imported pandas as pd</span>
+pd.read_csv(<span class="st">&quot;data/surveys.csv&quot;</span>)</code></pre></div>
+<p>The above command yields:</p>
+<pre class="output"><code>record_id  month  day  year  plot species  sex  wgt
+01      7   16  1977     2     NaN    M  NaN
+12      7   16  1977     3     NaN    M  NaN
+23      7   16  1977     2      DM    F  NaN
+34      7   16  1977     7      DM    M  NaN
+45      7   16  1977     3      DM    M  NaN
+56      7   16  1977     1      PF    M  NaN
+67      7   16  1977     2      PE    F  NaN
+78      7   16  1977     1      DM    M  NaN
+89      7   16  1977     1      DM    F  NaN
+9      10      7   16  1977     6      PF    F  NaN
+10     11      7   16  1977     5      DS    F  NaN
+11     12      7   16  1977     7      DM    M  NaN
+12     13      7   16  1977     3      DM    M  NaN
+13     14      7   16  1977     8      DM  NaN  NaN
+...
+[35549 rows x 8 columns]</code></pre>
+<p>We can see that there were 33,549 rows parsed. Each row has 8 columns. It looks like the <code>read_csv</code> function in Pandas read our file properly. However, we haven’t saved any data to memory so we can work with it. We need to assign the DataFrame to a variable. A variable is a name for a value, such as <code>x</code> or <code>data</code>. Python’s variables must begin with a letter and are <a href="reference.html#case-sensitive">case sensitive</a>. We can create a new object with a variable name by assigning a value to it using <code>=</code>.</p>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h2 id="variables-101"><span class="glyphicon glyphicon-pushpin"></span>Variables 101</h2>
+</div>
+<div class="panel-body">
+<p>Let’s step back and instead of considering a table of data, consider the simplest “collection” of data, a single value. The line below assigns the value <code>55</code> to a variable <code>weight_kg</code>:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">weight_kg <span class="op">=</span> <span class="dv">55</span></code></pre></div>
+<p>Once a variable has a value, we can print it to the screen:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="bu">print</span> weight_kg</code></pre></div>
+<pre class="output"><code>55</code></pre>
+<p>and do arithmetic with it:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="bu">print</span> <span class="st">&#39;weight in pounds:&#39;</span>, <span class="fl">2.2</span> <span class="op">*</span> weight_kg</code></pre></div>
+<pre class="output"><code>weight in pounds: 121.0</code></pre>
+<p>We can also change a variable’s value by assigning it a new one:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">weight_kg <span class="op">=</span> <span class="fl">57.5</span>
+<span class="bu">print</span> <span class="st">&#39;weight in kilograms is now:&#39;</span>, weight_kg</code></pre></div>
+<pre class="output"><code>weight in kilograms is now: 57.5</code></pre>
+<p>As the example above shows, we can print several things at once by separating them with commas.</p>
+<p>If we imagine the variable as a sticky note with a name written on it, assignment is like putting the sticky note on a particular value:</p>
+<div class="figure">
+<img src="fig/python-sticky-note-variables-01.svg" alt="Variables as Sticky Notes" />
+<p class="caption">Variables as Sticky Notes</p>
+</div>
+<p>This means that assigning a value to one variable does <em>not</em> change the values of other variables. For example, let’s store the subject’s weight in pounds in a variable:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">weight_lb <span class="op">=</span> <span class="fl">2.2</span> <span class="op">*</span> weight_kg
+<span class="bu">print</span> <span class="st">&#39;weight in kilograms:&#39;</span>, weight_kg, <span class="st">&#39;and in pounds:&#39;</span>, weight_lb</code></pre></div>
+<pre class="output"><code>weight in kilograms: 57.5 and in pounds: 126.5</code></pre>
+<div class="figure">
+<img src="fig/python-sticky-note-variables-02.svg" alt="Creating Another Variable" />
+<p class="caption">Creating Another Variable</p>
+</div>
+<p>and then change <code>weight_kg</code>:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">weight_kg <span class="op">=</span> <span class="fl">100.0</span>
+<span class="bu">print</span> <span class="st">&#39;weight in kilograms is now:&#39;</span>, weight_kg, <span class="st">&#39;and weight in pounds is still:&#39;</span>, weight_lb</code></pre></div>
+<pre class="output"><code>weight in kilograms is now: 100.0 and weight in pounds is still: 126.5</code></pre>
+<div class="figure">
+<img src="fig/python-sticky-note-variables-03.svg" alt="Updating a Variable" />
+<p class="caption">Updating a Variable</p>
+</div>
+<p>Since <code>weight_lb</code> doesn’t “remember” where its value came from, it isn’t automatically updated when <code>weight_kg</code> changes. This is different from the way spreadsheets work.</p>
+</div>
+</aside>
+<p>Just as we can assign a single value to a variable, we can also assign an array of values to a variable using the same syntax. Let’s call the imported survey data <code>surveys_df</code>:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">surveys_df <span class="op">=</span> pd.read_csv(<span class="st">&quot;data/surveys.csv&quot;</span>)</code></pre></div>
+<p>Notice when you assign the imported dataframe to a variable, python does not produce any output on the screen. We can print the value of the <code>surveys_df</code> object by typing its name into the python command prompt.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">surveys_df</code></pre></div>
+<pre class="output"><code>record_id  month  day  year  plot species  sex  wgt
+01      7   16  1977     2     NaN    M  NaN
+12      7   16  1977     3     NaN    M  NaN
+23      7   16  1977     2      DM    F  NaN
+34      7   16  1977     7      DM    M  NaN
+45      7   16  1977     3      DM    M  NaN
+56      7   16  1977     1      PF    M  NaN
+67      7   16  1977     2      PE    F  NaN
+78      7   16  1977     1      DM    M  NaN
+89      7   16  1977     1      DM    F  NaN
+9      10      7   16  1977     6      PF    F  NaN
+10     11      7   16  1977     5      DS    F  NaN
+11     12      7   16  1977     7      DM    M  NaN
+12     13      7   16  1977     3      DM    M  NaN
+13     14      7   16  1977     8      DM  NaN  NaN
+...
+[35549 rows x 8 columns]</code></pre>
+<p>Now that our data is in memory, we can start doing things with it. First, let’s ask what <a href="reference.html#type">type</a> of thing <code>surveys_df</code> refers to:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="bu">type</span>(surveys_df)
+<span class="co"># this does the same thing as the above!</span>
+surveys_df.__class__</code></pre></div>
+<p>The <code>type</code> method and <code>__class__</code> attribute tell us that <code>surveys_df</code> is <code>&lt;class 'pandas.core.frame.DataFrame'&gt;</code>. We can also use the <code>surveys_df.dtypes</code> command to view the data type for each column in our dataframe. Int64 represents numeric integer values - int64 cells can not store decimals. Object represents strings (letters and numbers). Float64 represents numbers with decimals.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">surveys_df.dtypes</code></pre></div>
+<pre class="output"><code>record_id      int64
+month   int64
+day     int64
+year    int64
+plot    int64
+speciesobject
+sex    object
+wgt   float64
+dtype: object</code></pre>
+<p>We’ll talk a bit more about what the different formats mean in a different lesson.</p>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h3 id="how-to-view-dataframe-objects-in-python"><span class="glyphicon glyphicon-pushpin"></span>How to view DataFrame objects in Python</h3>
+</div>
+<div class="panel-body">
+<p>There are multiple methods that can be used to summarize and access the data stored in dataframes. Note that we call the method by using the object name <code>surveys_df.method</code>. So <code>surveys_df.columns</code> provides an index of all of the column names in our DataFrame.</p>
+</div>
+</aside>
+<section class="challenge panel panel-success">
+<div class="panel-heading">
+<h2 id="exploring-methods"><span class="glyphicon glyphicon-pencil"></span>Exploring methods</h2>
+</div>
+<div class="panel-body">
+<ol style="list-style-type: decimal">
+<li><code>surveys_df.columns</code></li>
+<li><code>surveys_df.head()</code> Also, what does <code>surveys_df.head(15)</code> do?</li>
+<li><code>surveys_df.tail()</code></li>
+<li><code>surveys_df.shape</code> Take note of the output of the shape method. In what format does it return the shape of the DataFrame? HINT: <a href="https://docs.python.org/2/tutorial/datastructures.html#tuples-and-sequences">More on tuples here</a>.</li>
+</ol>
+</div>
+</section>
+<h2 id="calculating-statistics-in-a-pandas-dataframe">Calculating statistics in a pandas DataFrame</h2>
+<p>We’ve read our data into Python. Now, let’s perform some quick summary statistics to learn more about the data that we’re working with. We might want to know how many animals were collected in each plot, or how many of each species were caught. We can perform summary stats quickly using groups. But first we need to figure out what we want to group by.</p>
+<p>Let’s begin by exploring our data:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="co"># Look at the column names</span>
+surveys_df.columns.values</code></pre></div>
+<pre class="output"><code>array([&#39;record_id&#39;, &#39;month&#39;, &#39;day&#39;, &#39;year&#39;, &#39;plot&#39;, &#39;species&#39;, &#39;sex&#39;, &#39;wgt&#39;], dtype=object)</code></pre>
+<p>We can also get a list of all the unique species. The <code>pd.unique</code> function tells us all of the unique values in the species column.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">pd.unique(surveys_df.species_id)</code></pre></div>
+<pre class="output"><code>array([&#39;NL&#39;, &#39;DM&#39;, &#39;PF&#39;, &#39;PE&#39;, &#39;DS&#39;, &#39;PP&#39;, &#39;SH&#39;, &#39;OT&#39;, &#39;DO&#39;, &#39;OX&#39;, &#39;SS&#39;,
+&#39;OL&#39;, &#39;RM&#39;, nan, &#39;SA&#39;, &#39;PM&#39;, &#39;AH&#39;, &#39;DX&#39;, &#39;AB&#39;, &#39;CB&#39;, &#39;CM&#39;, &#39;CQ&#39;,
+&#39;RF&#39;, &#39;PC&#39;, &#39;PG&#39;, &#39;PH&#39;, &#39;PU&#39;, &#39;CV&#39;, &#39;UR&#39;, &#39;UP&#39;, &#39;ZL&#39;, &#39;UL&#39;, &#39;CS&#39;,
+&#39;SC&#39;, &#39;BA&#39;, &#39;SF&#39;, &#39;RO&#39;, &#39;AS&#39;, &#39;SO&#39;, &#39;PI&#39;, &#39;ST&#39;, &#39;CU&#39;, &#39;SU&#39;, &#39;RX&#39;,
+&#39;PB&#39;, &#39;PL&#39;, &#39;PX&#39;, &#39;CT&#39;, &#39;US&#39;], dtype=object)</code></pre>
+<section class="challenge panel panel-success">
+<div class="panel-heading">
+<h2 id="examine-the-data"><span class="glyphicon glyphicon-pencil"></span>Examine the data</h2>
+</div>
+<div class="panel-body">
+<ol style="list-style-type: decimal">
+<li>Create a list of unique plot ID’s found in the surveys data. Call it <code>plotNames</code>. How many unique plots are there in the data? How many unique species are in the data?</li>
+</ol>
+</div>
+</section>
+<h2 id="groups-in-pandas">Groups in Pandas</h2>
+<p>We might often be interested in calculating summary statistics grouped by subsets or attributes within fields of our data. For example, we might want to calculate the average weight of all individuals per plot.</p>
+<p>We can also extract basic statistics for all rows in a column, individually using the syntax below:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">surveys_df[<span class="st">&#39;wgt&#39;</span>].describe()</code></pre></div>
+<pre class="output"><code>count    32283.000000
+mean 42.672428
+std  36.631259
+min   4.000000
+25%  20.000000
+50%  37.000000
+75%  48.000000
+max 280.000000
+dtype: float64</code></pre>
+<p>We can also calculate each specific metric separately:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">surveys_df[<span class="st">&#39;wgt&#39;</span>].<span class="bu">min</span>()
+surveys_df[<span class="st">&#39;wgt&#39;</span>].<span class="bu">max</span>()
+surveys_df[<span class="st">&#39;wgt&#39;</span>].mean()
+surveys_df[<span class="st">&#39;wgt&#39;</span>].std()
+surveys_df[<span class="st">&#39;wgt&#39;</span>].count()</code></pre></div>
+<p>But if we want to summarize by one or more variables (for example, sex), we use the <code>.groupby</code> method in pandas. Once we’ve created a groupby DataFrame, we can quickly calculate summary statistics by a group of our choice.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="co"># Group data by sex</span>
+<span class="bu">sorted</span> <span class="op">=</span> surveys_df.groupby(<span class="st">&#39;sex&#39;</span>)</code></pre></div>
+<p>The pandas method <code>describe</code> will return descriptive stats for each column that contains numeric data.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="co"># summary statistics for all numeric columns by sex</span>
+<span class="bu">sorted</span>.describe()
+<span class="co"># provide the mean for each numeric column by sex</span>
+<span class="bu">sorted</span>.mean()</code></pre></div>
+<pre class="output"><code> record_id day  yearplot wgt
+sex
+F    18036.412046  16.007138  1990.644997  11.440854  42.170555
+M    17754.835601  16.184286  1990.480401  11.098282  42.995379
+P    22488.000000  21.000000  1995.000000   8.000000  13.000000
+R    21704.000000  12.000000  1994.000000  12.000000 NaN
+Z    23839.000000  15.000000  1996.000000   3.000000  18.000000
+</code></pre>
+<p>The <code>groupby</code> command is powerful in that it allows us to quickly generate summary stats. This is also useful for initial examination of our data. We can immediately notice some unusual values in our data that we might need to explore further. For example, unless we’re working with butterflies, Z is unlikely to be a sex. Also, it looks like there are no weight values for the species that is of sex “R”.</p>
+<section class="challenge panel panel-success">
+<div class="panel-heading">
+<h2 id="test-your-understanding"><span class="glyphicon glyphicon-pencil"></span>Test your understanding</h2>
+</div>
+<div class="panel-body">
+<ol style="list-style-type: decimal">
+<li>How many records contain the sex designations “Z”, “P” and “R”?</li>
+<li>What happens when you run: <code>sorted2 = surveys_df.groupby(['plot','sex'])</code> <code>sorted2.mean()</code></li>
+<li>Summarize weight values for each plot in your data. HINT: you can use the following syntax to create summary statistics for any one column in your data. <code>byPlot['wgt'].describe()</code></li>
+</ol>
+</div>
+</section>
+<h2 id="quickly-creating-summary-counts-in-pandas">Quickly Creating Summary Counts in Pandas</h2>
+<p>Let’s count the samples of each unique species that appear in our data. We can do this in a few ways. We’ll use <code>groupby</code> combined with a <code>count()</code> method.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="co"># count the number of samples by species</span>
+species_list <span class="op">=</span> surveys_df[<span class="st">&#39;record_id&#39;</span>].groupby(surveys_df.species).count()</code></pre></div>
+<p>If we just want to know about the species “DO”, we can type:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">surveys_df[<span class="st">&#39;record_id&#39;</span>].groupby(surveys_df.species).count()[<span class="st">&#39;DO&#39;</span>]</code></pre></div>
+<h2 id="basic-math-functions">Basic Math Functions</h2>
+<p>We might be interested in performing a calculation on an entire column of our data. For example, we might need to convert between units or normalize the data according to a mean or the area.</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="co"># convert the weight from grams to kilograms</span>
+surveys_df[<span class="st">&#39;wgt&#39;</span>]<span class="op">*</span><span class="fl">0.0001</span></code></pre></div>
+<h2 id="quick-easy-plotting-in-pandas">Quick &amp; Easy Plotting in pandas</h2>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h2 id="some-ipython-magic"><span class="glyphicon glyphicon-pushpin"></span>Some IPython magic</h2>
+</div>
+<div class="panel-body">
+<p>If you’re using an IPython / Jupyter notebook, you’ll need to execute the following command in order for your matplotlib images to appear within the notebook (instead of a window):</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="op">%</span> matplotlib inline</code></pre></div>
+<p>The <code>%</code> indicates an IPython magic function, which are functions that are only valid within the notebook environment. Note that you only have to execute this function once per notebook.</p>
+</div>
+</aside>
+<p>We can also plot our summary stats with pandas:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="co"># create a quick bar chart</span>
+species_list.plot(kind<span class="op">=</span><span class="st">&#39;bar&#39;</span>)<span class="op">;</span></code></pre></div>
+<div class="figure">
+<img src="img/weightBySpecies.png" alt="Weight by Species Plot" />
+<p class="caption">Weight by Species Plot</p>
+</div>
+<p>We can also look at how many animals were captured in each plot:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">total_count<span class="op">=</span>surveys_df.record_id.groupby(surveys_df[<span class="st">&#39;plot&#39;</span>]).nunique()
+<span class="co"># let&#39;s plot that too</span>
+total_count.plot(kind<span class="op">=</span><span class="st">&#39;bar&#39;</span>)<span class="op">;</span></code></pre></div>
+<section class="challenge panel panel-success">
+<div class="panel-heading">
+<h2 id="make-some-figures"><span class="glyphicon glyphicon-pencil"></span>Make some figures</h2>
+</div>
+<div class="panel-body">
+<ol style="list-style-type: decimal">
+<li>Create a plot of average weight across all species per plot.</li>
+<li>Create a plot of total males versus total females for the entire dataset.</li>
+</ol>
+</div>
+</section>
+<section class="challenge panel panel-success">
+<div class="panel-heading">
+<h1 id="summarize-the-data"><span class="glyphicon glyphicon-pencil"></span>Summarize the data</h1>
+</div>
+<div class="panel-body">
+<p>Create a stacked bar plot, with weight on the Y axis, and the stacked variables being sex. The plot should show total weight by sex for each plot. Some tips are below to help you solve this challenge <a href="http://pandas.pydata.org/pandas-docs/dev/generated/pandas.core.groupby.DataFrameGroupBy.plot.html">Go here to learn more about pandas plots</a>.</p>
+<ul>
+<li>You can use the code that follows to create a stacked bar plot but the data need to be in individual where each value is a mean weight. The first column represents the plot number and the second and third columns represent the sex, like this:</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python">        wgt
+sex     F   M
+plot
+<span class="dv">1</span>  <span class="fl">46.311138</span> <span class="fl">55.950560</span>
+<span class="dv">2</span>  <span class="fl">52.561845</span> <span class="fl">51.391382</span>
+
+my_plot<span class="op">=</span>data.plot(kind<span class="op">=</span><span class="st">&#39;bar&#39;</span>,stacked<span class="op">=</span><span class="va">True</span>,title<span class="op">=</span><span class="st">&quot;Total Weight by Plot and Sex&quot;</span>)
+my_plot.set_xlabel(<span class="st">&quot;Plot&quot;</span>)
+my_plot.set_ylabel(<span class="st">&quot;Weight&quot;</span>)</code></pre></div>
+<ul>
+<li>You can use the <code>.unstack()</code> method to transform grouped data into columns for each plotting. Try running `surveys_df.unstack’ and see what it yields.</li>
+</ul>
+<div class="figure">
+<img src="img/stackedBar.png" alt="Stacked Bar Plot" />
+<p class="caption">Stacked Bar Plot</p>
+</div>
+</div>
+</section>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="http://software-carpentry.org/v5/js/jquery-1.9.1.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+  </body>
+</html>
